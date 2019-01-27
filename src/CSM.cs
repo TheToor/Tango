@@ -70,7 +70,10 @@ namespace CSM
             // Log4View target
             var log4View = new NLogViewerTarget()
             {
-                Address = "udp://127.0.0.1:878"
+                Address = "tcp://127.0.0.1:878",
+                OnConnectionOverflow = NetworkTargetConnectionsOverflowAction.Block,
+                NewLine = true,
+                Layout = "${longdate}|${level}|${logger}|${message}"
             };
             // There may be alot of trace messages (which is kinda the point of trace) so we write the logs async so it doesn't block any threads
             var asyncWrapper = new AsyncTargetWrapper()
@@ -89,6 +92,7 @@ namespace CSM
             config.AddRule(LogLevel.Debug, LogLevel.Fatal, logfile);
 
             LogManager.Configuration = config;
+            LogManager.ReconfigExistingLoggers();
         }
 
         public string Name => "Cities: Skylines Multiplayer";
