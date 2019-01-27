@@ -6,6 +6,7 @@ using Harmony;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
+using NLog.Targets.Wrappers;
 using System;
 using System.Reflection;
 using UnityEngine;
@@ -69,6 +70,23 @@ namespace CSM
 
             // Target for console logging
             var logconsole = new ConsoleTarget("logconsole") { Layout = layout };
+
+#if DEBUG
+            // Log4View target
+            var log4View = new NLogViewerTarget()
+            {
+                Address = "udp://127.0.0.1:878"
+            };
+            // There may be alot of trace messages (which is kinda the point of trace) so we write the logs async so it doesn't block any threads
+            var asyncWrapper = new AsyncTargetWrapper()
+            {
+                OverflowAction = AsyncTargetWrapperOverflowAction.Discard,
+                QueueLimit = 50000,
+                WrappedTarget = log4View
+            };
+            config.AddRule(LogLevel.Trace, LogLevel.Fatal, asyncWrapper);
+#endif
+
 
             // While in development set both levels to start at debug, later on we
             // want to set an option to do this.
